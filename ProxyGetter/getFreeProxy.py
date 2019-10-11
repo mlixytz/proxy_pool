@@ -322,6 +322,16 @@ class GetFreeProxy(object):
                 r.text)
             for proxy in proxies:
                 yield ':'.join(proxy)
+    
+    @staticmethod
+    def freeProxy_xiladaili():
+        urls = ['http://www.xiladaili.com/']
+        request = WebRequest()
+        for url in urls:
+            r = request.get(url, timeout=10)
+            ips = re.findall(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}", r.text)
+            for ip in ips:
+                yield ip.strip()
 
 
 if __name__ == '__main__':
