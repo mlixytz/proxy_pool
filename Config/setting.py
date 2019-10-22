@@ -53,6 +53,7 @@ DATABASES = {
 # register the proxy getter function
 
 PROXY_GETTER = [
+    'free_proxy_5u',
     'freeProxy_xiladaili'
 ]
 

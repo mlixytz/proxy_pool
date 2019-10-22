@@ -31,34 +31,30 @@ class GetFreeProxy(object):
     """
 
     @staticmethod
-    def freeProxy01():
-        """
-        无忧代理 http://www.data5u.com/
-        几乎没有能用的
-        :return:
-        """
-        url_list = [
-            'http://www.data5u.com/',
-            'http://www.data5u.com/free/gngn/index.shtml',
-            'http://www.data5u.com/free/gnpt/index.shtml'
-        ]
+    def free_proxy_5u():
+        # TODO 取代理服务器用代理服务器访问
+        wr = WebRequest()
+        """ 无忧代理 """
+        url = 'http://www.data5u.com/'
+
         key = 'ABCDEFGHIZ'
-        for url in url_list:
-            html_tree = getHtmlTree(url)
-            ul_list = html_tree.xpath('//ul[@class="l2"]')
-            for ul in ul_list:
-                try:
-                    ip = ul.xpath('./span[1]/li/text()')[0]
-                    classnames = ul.xpath('./span[2]/li/attribute::class')[0]
-                    classname = classnames.split(' ')[1]
-                    port_sum = 0
-                    for c in classname:
-                        port_sum *= 10
-                        port_sum += key.index(c)
-                    port = port_sum >> 3
-                    yield '{}:{}'.format(ip, port)
-                except Exception as e:
-                    print(e)
+        html_tree = getHtmlTree(url)
+        ul_list = html_tree.xpath('//ul[@class="l2"]')
+        for ul in ul_list:
+            try:
+                ip = ul.xpath('./span[1]/li/text()')[0]
+                classnames = ul.xpath('./span[2]/li/attribute::class')[0]
+                classname = classnames.split(' ')[1]
+                port_sum = 0
+                for c in classname:
+                    port_sum *= 10
+                    port_sum += key.index(c)
+                port = port_sum >> 3
+                protocol = ul.xpath('./span[4]/li/text()')[0]
+                ip = protocol + '://' + ip
+                yield '{}:{}'.format(ip, port)
+            except Exception as e:
+                print(e)
 
     @staticmethod
     def freeProxy02(count=20):
@@ -325,13 +321,27 @@ class GetFreeProxy(object):
     
     @staticmethod
     def freeProxy_xiladaili():
-        urls = ['http://www.xiladaili.com/']
-        request = WebRequest()
+        urls = ['http://www.xiladaili.com/gaoni/%d/', 'http://www.xiladaili.com/http/%d/', 'http://www.xiladaili.com/https/%d/']
+
         for url in urls:
-            r = request.get(url, timeout=10)
-            ips = re.findall(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}", r.text)
-            for ip in ips:
-                yield ip.strip()
+            # 每个url抓取20页
+            for i in range(1, 21):
+                new_url = url % i
+                dom = getHtmlTree(new_url)
+                for item in dom.xpath('//tr'):
+                    ip = item.xpath('./td[1]/text()')
+                    if not len(ip):
+                        continue
+                    ip = item.xpath('./td[1]/text()')[0]
+                    protocol = item.xpath('./td[2]/text()')[0]
+                    if "," in protocol:
+                        # 支持http 和 https
+                        yield 'http://' + ip.strip()
+                        yield 'https://' + ip.strip()
+                    elif "HTTPS" in protocol:
+                        yield 'https://' + ip.strip()
+                    else:
+                        yield 'http://' + ip.strip()
 
 
 if __name__ == '__main__':
